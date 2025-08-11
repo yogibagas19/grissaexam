@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ "Edit User" if user else "Create User" }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" rel="stylesheet"/>
+</head>
+<body>
+    <div class="page">
+        <div class="page-wrapper">
+            <div class="page-header d-print-none">
+                <div class="container-xl">
+                    <h1>{{ "Edit User: " + user.username if user else "Create New User" }}</h1>
+                </div>
+            </div>
+            <div class="page-body">
+                <div class="container-xl">
+                    <div class="card">
+                        <div class="card-body">
+                            {% if error %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ error }}
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label class="form-label required">Username</label>
+                                    <input type="text" name="username" class="form-control" value="{{ user.username if user else '' }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" name="password" class="form-control">
+                                    <small class="form-hint">
+                                        {% if user %}
+                                        Biarkan kosong untuk tidak mengubah password yang sudah ada.
+                                        {% else %}
+                                        Wajib diisi untuk user baru.
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="form-footer">
+                                    <a href="/admin/users" class="btn btn-secondary">Batal</a>
+                                    <button type="submit" class="btn btn-success ms-auto">Simpan</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
