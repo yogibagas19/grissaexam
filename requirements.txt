@@ -8,3 +8,4 @@ gunicorn
 qrcode
 pillow
 apscheduler[asyncio]
+redis

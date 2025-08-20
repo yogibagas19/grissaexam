@@ -4,6 +4,7 @@ import qrcode
 import random
 import string
 import sqlite3
+import uuid
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
@@ -12,34 +13,71 @@ from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
-from sqladmin import Admin
-from models import SessionLocal, engine, User
+from models import SessionLocal, engine, User, AppState
 from sqlalchemy.orm import Session
 from security import verify_password, get_password_hash
+import redis
+from typing import Optional
 
 current_admin_token = None
 SESSION_COOKIE_NAME = "grissa_admin_session"
+redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
 def generate_new_token():
     return "".join(random.choices(string.digits, k=6))
 
 def refresh_admin_token_job():
-    global current_admin_token
-    current_admin_token = generate_new_token()
-    print(f"Token Admin Baru (Otomatis): {current_admin_token}")
+    db = SessionLocal()
+    try:
+        app_state = db.query(AppState).filter(AppState.id == 1).first()
+        # --- TAMBAHKAN BLOK 'IF' INI ---
+        if not app_state:
+            app_state = AppState(id=1)
+            db.add(app_state)
+            db.commit()
+            db.refresh(app_state)
+
+        new_token = generate_new_token()
+        app_state.current_token = new_token
+        db.commit()
+
+        redis_client.set("current_admin_token", new_token)
+        print(f"Token Admin Baru (Otomatis & Disimpan di Cache): {new_token}")
+    finally:
+        db.close()
 
 scheduler = AsyncIOScheduler()
 scheduler.add_job(refresh_admin_token_job, "interval", minutes=30)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global current_admin_token
-    current_admin_token = generate_new_token()
+    print("Memulai aplikasi dan mengisi cache token awal...")
+    db = SessionLocal()
+    try:
+        app_state = db.query(AppState).filter(AppState.id == 1).first()
+        # --- TAMBAHKAN BLOK 'IF' INI ---
+        if not app_state:
+            app_state = AppState(id=1)
+            db.add(app_state)
+            db.commit()
+            db.refresh(app_state)
+
+        new_token = generate_new_token()
+        app_state.current_token = new_token
+        db.commit()
+        redis_client.set("current_admin_token", new_token)
+        print(f"Token awal berhasil dibuat dan disimpan di cache: {new_token}")
+    finally:
+        db.close()
+    
     scheduler.start()
-    print("Server dimulai...")
+    print("Scheduler berhasil dimulai.")
+    
     yield
+    
+    print("Mematikan scheduler...")
     scheduler.shutdown()
-    print("Server dimatikan...")
+    print("Aplikasi berhasil dimatikan.")
 
 app = FastAPI(title="Exam Browser Backend", lifespan=lifespan)
 templates = Jinja2Templates(directory="templates")
@@ -50,6 +88,7 @@ class QRCodeRequest(BaseModel):
 
 class TokenValidationRequest(BaseModel):
     token: str
+    sessionId: Optional[str] = None
 
 async def get_current_admin(request: Request):
     if not request.cookies.get(SESSION_COOKIE_NAME):
@@ -150,18 +189,36 @@ async def serve_teacher_dashboard(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "title": "Dashboard Admin"})
 
 @app.get("/api/current-token", tags=["API"], dependencies=[Depends(get_current_admin)])
-async def get_current_token():
-    return {"token": current_admin_token}
+async def get_current_token(db: Session = Depends(get_db)): # Tambahkan dependency db
+    app_state = db.query(AppState).filter(AppState.id == 1).first()
+    if not app_state:
+        # Jika tidak ada, return null atau token error
+        return {"token": None}
+    return {"token": app_state.current_token}   
 
 @app.post("/api/refresh-token", tags=["API"], dependencies=[Depends(get_current_admin)])
-async def refresh_token_manual():
-    global current_admin_token
-    current_admin_token = generate_new_token()
-    return {"token": current_admin_token}
+async def refresh_token_manual(db: Session = Depends(get_db)):
+    app_state = db.query(AppState).filter(AppState.id == 1).first()
+    # --- TAMBAHKAN BLOK 'IF' INI ---
+    if not app_state:
+        app_state = AppState(id=1)
+        db.add(app_state)
+        db.commit()
+        db.refresh(app_state)
+    
+    new_token = generate_new_token()
+    app_state.current_token = new_token
+    db.commit()
+    redis_client.set("current_admin_token", new_token)
+    return {"token": new_token}
 
 @app.post("/api/generate-qr", tags=["API"], dependencies=[Depends(get_current_admin)])
 async def generate_qr_code(qr_request: QRCodeRequest):
-    data_to_encode = {"exam_url": qr_request.url}
+    session_id = uuid.uuid4().hex
+    data_to_encode = {
+        "exam_url": qr_request.url, 
+        "exam_session_id": session_id
+    }
     json_string = json.dumps(data_to_encode)
     img = qrcode.make(json_string)
     buffer = io.BytesIO()
@@ -169,8 +226,66 @@ async def generate_qr_code(qr_request: QRCodeRequest):
     buffer.seek(0)
     return StreamingResponse(buffer, media_type="image/png")
 
+# @app.post("/api/validate-token", tags=["API"])
+# async def validate_token(request: TokenValidationRequest):
+#     cached_token = redis_client.get("current_admin_token")
+
+#     if request.token and request.token == cached_token:
+#         return {"isValid": True}
+#     return {"isValid": False}
 @app.post("/api/validate-token", tags=["API"])
 async def validate_token(request: TokenValidationRequest):
-    if request.token and request.token == current_admin_token:
-        return {"isValid": True}
-    return {"isValid": False}
+    # Skenario 2: Permintaan Re-entry (dari layar terkunci)
+    if request.sessionId:
+        print(f"Menerima permintaan re-entry untuk sesi: {request.sessionId}")
+        expected_token = redis_client.get(f"reentry_token_for:{request.sessionId}")
+        
+        if expected_token and request.token == expected_token:
+            redis_client.delete(f"reentry_token_for:{request.sessionId}")
+            return {"isValid": True}
+        else:
+            return {"isValid": False}
+            
+    # Skenario 1: Permintaan Keluar Biasa (dari tombol Exit)
+    else:
+        print("Menerima permintaan keluar biasa.")
+        cached_token = redis_client.get("current_admin_token")
+        if request.token and request.token == cached_token:
+            return {"isValid": True}
+        else:
+            return {"isValid": False}
+
+
+class SessionIdRequest(BaseModel):
+    sessionId: str
+
+@app.post("/api/generate-reentry-token", tags=["API"], dependencies=[Depends(get_current_admin)])
+async def generate_reentry_token(request: SessionIdRequest):
+    new_reentry_token = generate_new_token()
+    redis_client.set(f"reentry_token_for:{request.sessionId}", new_reentry_token, ex=300)
+    print(f"Token Lanjutan untuk sesi {request.sessionId} adalah {new_reentry_token}")
+    # Logika untuk menghasilkan re-entry token berdasarkan sessionId
+    return {"reentry_token": new_reentry_token}
+
+@app.post("/api/session/start", tags=["API"])
+async def start_session(request: SessionIdRequest):
+    session_id = request.sessionId
+    if session_id:
+        redis_client.sadd("active_exam_sessions", session_id)
+        print(f"Sesi dimulai dan terdaftar: {session_id}")
+        return {"status": "session regsitered"}
+    return {"status": "error", "message": "sessionId is required"}
+
+@app.get("/api/active-sessions", tags=["API"])
+async def get_active_sessions():
+    session_ids = redis_client.smembers("active_exam_sessions")
+    return {"active_sessions": list(session_ids)}
+
+@app.post("/api/session/end", tags=["API"])
+async def end_session(request: SessionIdRequest):
+    session_id = request.sessionId
+    if session_id:
+        redis_client.srem("active_exam_sessions", session_id)
+        print(f"Sesi diakhiri dan dihapus dari daftar aktif: {session_id}")
+        return {"status": "session ended"}
+    return {"status": "error", "message": "sessionId is required"}

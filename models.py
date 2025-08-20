@@ -13,3 +13,10 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     password: ClassVar[str] = None
+
+class AppState(Base):
+    __tablename__ = "app_state"
+    
+    # Hanya akan ada satu baris di tabel ini, jadi ID 1 adalah kuncinya
+    id = Column(Integer, primary_key=True, default=1)
+    current_token = Column(String, nullable=True)

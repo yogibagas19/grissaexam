@@ -1,311 +1,522 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ title }} - Grissa Exam</title>
-    <link rel="shortcut icon" href="https://smpn1salatiga.sch.id/home/po-includes/images/favicon.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+      rel="shortcut icon"
+      href="https://smpn1salatiga.sch.id/home/po-includes/images/favicon.png"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        /* CSS Reset & Global Styles */
-        :root {
-            --primary-dark: #1C2B5F;
-            --primary-accent: #5352ED;
-            --secondary-accent: #FBC531;
-            --background-light: #F0F2F5;
-            --text-light: #FFFFFF;
-            --text-dark: #333333;
-            --border-radius: 12px;
-        }
+      /* CSS Reset & Global Styles */
+      :root {
+        --primary-dark: #1c2b5f;
+        --primary-accent: #5352ed;
+        --secondary-accent: #fbc531;
+        --background-light: #f0f2f5;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --border-radius: 12px;
+      }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
-            background-image: url(/static/images/background_index.png);
-            background-position: center;
-            background-size: cover;
-        }
+      body {
+        font-family: "Poppins", system-ui, -apple-system, sans-serif;
+        background-image: url(/static/images/background_index.png);
+        background-position: center;
+        background-size: cover;
+      }
 
-        /* Header */
-        .header {
-            width: 100%;
-            background-color: var(--primary-dark);
-            color: var(--text-light);
-            padding: 1.5rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        .header-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-        .header-logo img {
-            height: 100px;
-        }
+      /* Header */
+      .header {
+        width: 100%;
+        background-color: var(--primary-dark);
+        color: var(--text-light);
+        padding: 1.5rem 5%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+      .header-logo img {
+        height: 100px;
+      }
 
-        /* Main Content */
-        main {
-            width: 100%;
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
+      /* Main Content */
+      main {
+        width: 100%;
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
 
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 2rem;
+      }
+
+      /* Card Styling */
+      .card {
+        background-color: var(--primary-dark);
+        color: var(--text-light);
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 8px 25px rgba(28, 43, 95, 0.2);
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+      }
+      .card h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 1rem;
+      }
+
+      /* Specific Card Styles */
+      #token-display {
+        background-color: var(--text-light);
+        color: var(--primary-accent);
+        font-size: 3.5rem;
+        font-weight: 700;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+        letter-spacing: 0.5rem;
+      }
+
+      .qr-card input[type="url"] {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+      #qr-code-container {
+        background-color: white;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        min-height: 200px; /* Disesuaikan agar lebih proporsional */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1; /* Membuat container QR mengisi ruang tersedia */
+        margin-bottom: 1rem;
+      }
+      #qr-code-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+
+      /* Button Styling */
+      .btn {
+        display: inline-block;
+        width: 100%;
+        border: none;
+        padding: 0.9rem 1.5rem;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+      .btn-primary {
+        background-color: #2e86de; /* Biru cerah untuk aksi utama */
+        color: var(--text-light);
+      }
+      .btn-secondary {
+        background-color: var(--secondary-accent);
+        color: var(--primary-dark);
+      }
+      .btn-danger {
+        background-color: #dc3545;
+        color: var(--text-light);
+      }
+
+      .token-card .btn-secondary {
+        margin-top: auto; /* Mendorong tombol refresh ke bawah */
+      }
+
+      .actions-container {
+        margin-top: 2rem;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      .actions-container a {
+        color: var(--text-light);
+      }
+
+      .list-group {
+        list-style: none;
+        padding: 0;
+      }
+      .list-group-item {
+        background-color: rgba(255, 255, 255, 0.05);
+        padding: 0.75rem 1.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: -1px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .list-group-item:first-child {
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+      }
+      .list-group-item:last-child {
+        margin-bottom: 0;
+        border-bottom-right-radius: var(--border-radius);
+        border-bottom-left-radius: var(--border-radius);
+      }
+      .btn-sm {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.875rem;
+        border-radius: 8px;
+        width: auto;
+      }
+
+      /* Mobile Responsiveness */
+      @media (max-width: 800px) {
         .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 2rem;
+          grid-template-columns: 1fr; /* Stack cards vertically on mobile */
         }
-
-        /* Card Styling */
-        .card {
-            background-color: var(--primary-dark);
-            color: var(--text-light);
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            box-shadow: 0 8px 25px rgba(28, 43, 95, 0.2);
-            display: flex;
-            flex-direction: column;
-            text-align: center;
+        .header {
+          flex-direction: column;
+          gap: 1rem;
         }
-        .card h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 1rem;
-        }
-        
-        /* Specific Card Styles */
-        #token-display {
-            background-color: var(--text-light);
-            color: var(--primary-accent);
-            font-size: 3.5rem;
-            font-weight: 700;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.5rem;
-        }
-
-        .qr-card input[type="url"] {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            margin-bottom: 1rem;
-        }
-        #qr-code-container {
-            background-color: white;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            min-height: 200px; /* Disesuaikan agar lebih proporsional */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-grow: 1; /* Membuat container QR mengisi ruang tersedia */
-            margin-bottom: 1rem;
-        }
-        #qr-code-image {
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-        }
-
-        /* Button Styling */
-        .btn {
-            display: inline-block;
-            width: 100%;
-            border: none;
-            padding: 0.9rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        .btn-primary {
-            background-color: #2E86DE; /* Biru cerah untuk aksi utama */
-            color: var(--text-light);
-        }
-        .btn-secondary {
-            background-color: var(--secondary-accent);
-            color: var(--primary-dark);
-        }
-        .btn-danger {
-            background-color: #dc3545;
-            color: var(--text-light);
-        }
-
-        .token-card .btn-secondary {
-            margin-top: auto; /* Mendorong tombol refresh ke bawah */
-        }
-
+      }
+      @media (max-width: 500px) {
         .actions-container {
-            margin-top: 2rem;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+          grid-template-columns: 1fr;
         }
-        .actions-container a {
-             color: var(--text-light);
+        #token-display {
+          font-size: 2.5rem;
+          letter-spacing: 0.2rem;
         }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 800px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr; /* Stack cards vertically on mobile */
-            }
-            .header {
-                flex-direction: column;
-                gap: 1rem;
-            }
+        .list-group-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
         }
-        @media (max-width: 500px) {
-            .actions-container {
-                grid-template-columns: 1fr;
-            }
-            #token-display {
-                font-size: 2.5rem;
-                letter-spacing: 0.2rem;
-            }
-        }
-
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header class="header">
-        <div class="header-title">Dashboard Admin</div>
-        <div class="header-logo">
-            <img src="{{ url_for('static', path='images/logo.png') }}" alt="Logo Sekolah">
-        </div>
+      <div class="header-title">Dashboard Admin</div>
+      <div class="header-logo">
+        <img
+          src="{{ url_for('static', path='images/logo.png') }}"
+          alt="Logo Sekolah"
+        />
+      </div>
     </header>
 
     <main>
-        <div class="dashboard-grid">
-            <div class="card token-card">
-                <h2>Token Aktif</h2>
-                <div id="token-display">...</div>
-                <p>
-                    <small>Token untuk diperbarui otomatis setiap 30 menit</small>
-                </p>
-                <button class="btn btn-secondary" onclick="refreshToken()" style="margin-top: 1rem;">
-                    Refresh Token Manual
-                </button>
-            </div>
-
-            <div class="card qr-card">
-                <h2>Generate QR Code Ujian</h2>
-                <input
-                    type="url"
-                    id="url-input"
-                    placeholder="https://moodle.sekolah.id//"
-                />
-                <button class="btn btn-primary" onclick="generateQRCode()" style="margin-top: 1rem;">
-                    Buat QR Code
-                </button>
-                <div id="qr-code-container">
-                    <img id="qr-code-image" src="" alt="QR Code akan muncul di sini" />
-                </div>
-                <button id="download-button" class="btn btn-secondary" onclick="downloadQRCode()" style="display: none;">
-                    Unduh QR Code
-                </button>
-            </div>
+      <div class="dashboard-grid">
+        <div class="card token-card">
+          <h2>Token Aktif</h2>
+          <div id="token-display">...</div>
+          <p>
+            <small>Token untuk diperbarui otomatis setiap 30 menit</small>
+          </p>
+          <button
+            class="btn btn-secondary"
+            onclick="refreshToken()"
+            style="margin-top: 1rem"
+          >
+            Refresh Token Manual
+          </button>
         </div>
 
-        <div class="actions-container">
-            <form action="/logout" method="post">
-                <button type="submit" class="btn btn-danger">Logout</button>
-            </form>
-            <a href="/admin/users" class="btn btn-primary">Manajemen User</a>
+        <div class="card qr-card">
+          <h2>Buat QR Code Ujian</h2>
+          <input
+            type="url"
+            id="url-input"
+            placeholder="https://disapa.smpn1salatiga.sch.id"
+          />
+          <button
+            class="btn btn-primary"
+            onclick="generateQRCode()"
+            style="margin-top: 1rem"
+          >
+            Buat QR Code
+          </button>
+          <div id="qr-code-container">
+            <img id="qr-code-image" src="" alt="QR Code akan muncul di sini" />
+          </div>
+          <button
+            id="download-button"
+            class="btn btn-secondary"
+            onclick="downloadQRCode()"
+            style="display: none"
+          >
+            Unduh QR Code
+          </button>
         </div>
+      </div>
+
+      <div class="card" style="margin-top: 2rem">
+        <h2>Pengawasan Sesi Aktif</h2>
+        <p
+          style="
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-top: -1rem;
+            margin-bottom: 1.5rem;
+          "
+        >
+          Jika aplikasi siswa terkunci, buatkan token lanjutan di sini.
+        </p>
+
+        <button
+          id="refresh-sessions-btn"
+          class="btn btn-secondary"
+          style="margin-bottom: 1.5rem"
+        >
+          Refresh Daftar Sesi
+        </button>
+
+        <div id="active-sessions-list" style="text-align: left">
+          <p>Klik "Refresh" untuk memuat sesi...</p>
+        </div>
+
+        <div
+          id="token-display-area"
+          style="
+            display: none;
+            margin-top: 2rem;
+            text-align: left;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+          "
+        >
+          <h4 style="font-size: 1.1rem">Token Lanjutan Berhasil Dibuat:</h4>
+          <div
+            style="
+              background-color: var(--text-light);
+              color: var(--primary-accent);
+              padding: 1rem;
+              border-radius: var(--border-radius);
+              margin-top: 0.5rem;
+              text-align: center;
+            "
+          >
+            <strong
+              id="generated-token-text"
+              style="font-size: 2rem; font-weight: 700; letter-spacing: 2px"
+            ></strong>
+            <p
+              style="
+                font-size: 0.8rem;
+                color: var(--text-dark);
+                margin-top: 0.5rem;
+                margin-bottom: 0;
+              "
+            >
+              Berikan token ini kepada siswa. Token hanya berlaku untuk beberapa
+              menit.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-container">
+        <form action="/logout" method="post">
+          <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+        <a href="/admin/users" class="btn btn-primary">Manajemen User</a>
+      </div>
     </main>
 
     <script>
-        // Semua fungsionalitas JavaScript Anda tetap sama
-        const tokenDisplay = document.getElementById("token-display");
-        const urlInput = document.getElementById("url-input");
-        const qrCodeImage = document.getElementById("qr-code-image");
-        const downloadButton = document.getElementById("download-button");
+      // Semua fungsionalitas JavaScript Anda tetap sama
+      const tokenDisplay = document.getElementById("token-display");
+      const urlInput = document.getElementById("url-input");
+      const qrCodeImage = document.getElementById("qr-code-image");
+      const downloadButton = document.getElementById("download-button");
 
-        async function fetchCurrentToken() {
-            try {
-                const response = await fetch("/api/current-token");
-                const data = await response.json();
-                tokenDisplay.textContent = data.token || "Error";
-            } catch (error) {
-                tokenDisplay.textContent = "Offline";
-            }
+      const refreshSessionsButton = document.getElementById(
+        "refresh-sessions-btn"
+      );
+      const sessionsListDiv = document.getElementById("active-sessions-list");
+      const tokenDisplayArea = document.getElementById("token-display-area");
+      const generatedTokenText = document.getElementById(
+        "generated-token-text"
+      );
+
+      async function fetchCurrentToken() {
+        try {
+          const response = await fetch("/api/current-token");
+          const data = await response.json();
+          tokenDisplay.textContent = data.token || "Error";
+        } catch (error) {
+          tokenDisplay.textContent = "Offline";
         }
+      }
 
-        async function refreshToken() {
-            try {
-                const response = await fetch("/api/refresh-token", { method: "POST" });
-                const data = await response.json();
-                tokenDisplay.textContent = data.token;
-            } catch (error) {
-                alert("Gagal merefresh token.");
-            }
+      async function refreshToken() {
+        try {
+          const response = await fetch("/api/refresh-token", {
+            method: "POST",
+          });
+          const data = await response.json();
+          tokenDisplay.textContent = data.token;
+        } catch (error) {
+          alert("Gagal merefresh token.");
         }
+      }
 
-        async function generateQRCode() {
-            let url = urlInput.value.trim();
-            if (!url) {
-                alert("Silakan masukkan URL ujian.");
-                return;
-            }
-            if (!/^https?:\/\//i.test(url)) {
-                url = "https://" + url;
-            }
-            try {
-                const response = await fetch("/api/generate-qr", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ url: url }),
-                });
-                if (!response.ok) {
-                    throw new Error("Gagal membuat QR Code dari server.");
-                }
-                const imageBlob = await response.blob();
-                const imageUrl = URL.createObjectURL(imageBlob);
-                qrCodeImage.src = imageUrl;
-                qrCodeImage.alt = "QR Code untuk: " + url;
-                downloadButton.style.display = "block";
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Gagal membuat QR Code.");
-            }
+      async function generateQRCode() {
+        let url = urlInput.value.trim();
+        if (!url) {
+          alert("Silakan masukkan URL ujian.");
+          return;
         }
-
-        function downloadQRCode() {
-            const link = document.createElement("a");
-            link.href = qrCodeImage.src;
-            link.download = "qrcode-ujian.png";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        if (!/^https?:\/\//i.test(url)) {
+          url = "https://" + url;
         }
+        try {
+          const response = await fetch("/api/generate-qr", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: url }),
+          });
+          if (!response.ok) {
+            throw new Error("Gagal membuat QR Code dari server.");
+          }
+          const imageBlob = await response.blob();
+          const imageUrl = URL.createObjectURL(imageBlob);
+          qrCodeImage.src = imageUrl;
+          qrCodeImage.alt = "QR Code untuk: " + url;
+          downloadButton.style.display = "block";
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Gagal membuat QR Code.");
+        }
+      }
 
-        // Panggil fungsi untuk mengambil token saat halaman dimuat
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchCurrentToken();
+      function downloadQRCode() {
+        const link = document.createElement("a");
+        link.href = qrCodeImage.src;
+        link.download = "qrcode-ujian.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      async function fetchActiveSessions() {
+        sessionsListDiv.innerHTML = "<p>Memuat sesi aktif...</p>";
+        tokenDisplayArea.style.display = "none";
+
+        try {
+          const response = await fetch("/api/active-sessions");
+          if (!response.ok) throw new Error("Gagal mengambil data sesi");
+          const data = await response.json();
+
+          if (data.active_sessions && data.active_sessions.length > 0) {
+            let listHtml = '<ul class="list-group">';
+            data.active_sessions.forEach((sessionId) => {
+              listHtml += `
+                                <li class="list-group-item">
+                                    <span>ID Sesi: <small><code>${sessionId}</code></small></span>
+                                    <button class="btn btn-primary btn-sm generate-reentry-token-btn" data-session-id="${sessionId}">
+                                        Buat Token
+                                    </button>
+                                </li>
+                            `;
+            });
+            listHtml += "</ul>";
+            sessionsListDiv.innerHTML = listHtml;
+          } else {
+            sessionsListDiv.innerHTML =
+              '<p style="color: rgba(255,255,255,0.7);">Tidak ada sesi ujian yang aktif saat ini.</p>';
+          }
+        } catch (error) {
+          sessionsListDiv.innerHTML =
+            '<p style="color: #ffc107;">Gagal memuat sesi. Coba lagi.</p>';
+          console.error("Error fetching sessions:", error);
+        }
+      }
+
+      async function generateReentryToken(sessionId) {
+        // Tampilkan semacam loading di tombol yang ditekan
+        const button = document.querySelector(
+          `.generate-reentry-token-btn[data-session-id="${sessionId}"]`
+        );
+        const originalText = button.innerHTML;
+        button.innerHTML = "Membuat...";
+        button.disabled = true;
+
+        try {
+          const response = await fetch("/api/generate-reentry-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId: sessionId }),
+          });
+          if (!response.ok) throw new Error("Gagal membuat token dari server");
+          const data = await response.json();
+
+          if (data.reentry_token) {
+            generatedTokenText.textContent = data.reentry_token;
+            tokenDisplayArea.style.display = "block";
+          } else {
+            alert("Gagal membuat token!");
+          }
+        } catch (error) {
+          alert("Terjadi error saat menghubungi server.");
+          console.error("Error generating reentry token:", error);
+        } finally {
+          // Kembalikan tombol ke keadaan semula
+          button.innerHTML = originalText;
+          button.disabled = false;
+        }
+      }
+
+      refreshSessionsButton.addEventListener("click", fetchActiveSessions);
+      sessionsListDiv.addEventListener("click", function (event) {
+            if (event.target && event.target.classList.contains("generate-reentry-token-btn")) {
+                const sessionId = event.target.getAttribute("data-session-id");
+                generateReentryToken(sessionId);
+            }
         });
+
+      fetchCurrentToken();
+      fetchActiveSessions();
+
+      // Panggil fungsi untuk mengambil token saat halaman dimuat
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchCurrentToken();
+      });
     </script>
-</body>
+  </body>
 </html>
