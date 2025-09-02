@@ -55,7 +55,6 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         app_state = db.query(AppState).filter(AppState.id == 1).first()
-        # --- TAMBAHKAN BLOK 'IF' INI ---
         if not app_state:
             app_state = AppState(id=1)
             db.add(app_state)
@@ -186,7 +185,7 @@ async def delete_user_handler(user_id: int, db: Session = Depends(get_db)):
 
 @app.get("/", response_class=HTMLResponse, dependencies=[Depends(get_current_admin)])
 async def serve_teacher_dashboard(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "title": "Dashboard Admin"})
+    return templates.TemplateResponse("index.html", {"request": request, "title": "DISAPA"})
 
 @app.get("/api/current-token", tags=["API"], dependencies=[Depends(get_current_admin)])
 async def get_current_token(db: Session = Depends(get_db)): # Tambahkan dependency db
@@ -259,13 +258,13 @@ async def validate_token(request: TokenValidationRequest):
 class SessionIdRequest(BaseModel):
     sessionId: str
 
-@app.post("/api/generate-reentry-token", tags=["API"], dependencies=[Depends(get_current_admin)])
-async def generate_reentry_token(request: SessionIdRequest):
-    new_reentry_token = generate_new_token()
-    redis_client.set(f"reentry_token_for:{request.sessionId}", new_reentry_token, ex=300)
-    print(f"Token Lanjutan untuk sesi {request.sessionId} adalah {new_reentry_token}")
-    # Logika untuk menghasilkan re-entry token berdasarkan sessionId
-    return {"reentry_token": new_reentry_token}
+# @app.post("/api/generate-reentry-token", tags=["API"], dependencies=[Depends(get_current_admin)])
+# async def generate_reentry_token(request: SessionIdRequest):
+#     new_reentry_token = generate_new_token()
+#     redis_client.set(f"reentry_token_for:{request.sessionId}", new_reentry_token, ex=300)
+#     print(f"Token Lanjutan untuk sesi {request.sessionId} adalah {new_reentry_token}")
+#     # Logika untuk menghasilkan re-entry token berdasarkan sessionId
+#     return {"reentry_token": new_reentry_token}
 
 @app.post("/api/session/start", tags=["API"])
 async def start_session(request: SessionIdRequest):
