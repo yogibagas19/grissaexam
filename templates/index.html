@@ -102,7 +102,8 @@
     }
 
     /* Specific Card Styles */
-    #token-display {
+    .token-display {
+      /* Mengubah ID menjadi class agar bisa dipakai ulang */
       background-color: var(--text-light);
       color: var(--primary-accent);
       font-size: 3.5rem;
@@ -235,7 +236,8 @@
         grid-template-columns: 1fr;
       }
 
-      #token-display {
+      .token-display {
+        /* Mengubah ID menjadi class */
         font-size: 2.5rem;
         letter-spacing: 0.2rem;
       }
@@ -259,21 +261,33 @@
 
   <main>
     <div class="dashboard-grid">
-      <div class="card token-card">
-        <h2>Token Aktif</h2>
-        <div id="token-display">...</div>
-        <p>
-          <small>Token untuk diperbarui otomatis setiap 30 menit</small>
-        </p>
-        <button class="btn btn-secondary" onclick="refreshToken()" style="margin-top: 1rem">
-          Refresh Token Manual
-        </button>
-      </div>
+      <div>
+        <div class="card token-card">
+          <h2>Token Masuk / Keluar</h2>
+          <div id="admin-token-display" class="token-display">...</div>
+          <p>
+            <small>Token diperbarui otomatis setiap 30 menit.</small>
+          </p>
+          <button class="btn btn-secondary" onclick="refreshToken()" style="margin-top: 1rem">
+            Refresh Token Manual
+          </button>
+        </div>
+
+        <div class="card token-card" style="margin-top: 2rem">
+          <h2>Token Re-entry</h2>
+          <div id="reentry-token-display" class="token-display" style="color: #e84118">...</div>
+          <p>
+            <small>Gunakan jika siswa keluar & terkena penalti.</small>
+          </p>
+          <button class="btn btn-secondary" onclick="refreshReentryToken()" style="margin-top: 1rem; background-color: #e84118; color: white;">
+            Refresh Token Re-entry
+          </button>
+        </div>
+        </div>
 
       <div class="card qr-card">
         <h2>Buat QR Code Ujian</h2>
-        <input type="url" id="url-input" class="form-control" style="margin-bottom: 0;"
-          placeholder="https://disapa.smpn1salatiga.sch.id" />
+        <input type="url" id="url-input" class="form-control" style="margin-bottom: 0;" placeholder="https://disapa.smpn1salatiga.sch.id" />
         <button class="btn btn-primary" onclick="generateQRCode()" style="margin-top: 1rem">
           Buat QR Code
         </button>
@@ -288,25 +302,16 @@
 
     <div class="card" style="margin-top: 2rem">
       <h2>Pengawasan Sesi Aktif</h2>
-      <p style="
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
-            margin-top: -1rem;
-            margin-bottom: 1.5rem;
-          ">
-        Jika aplikasi siswa terkunci, buatkan token lanjutan di sini.
-      </p>
-
       <button id="refresh-sessions-btn" class="btn btn-secondary" style="margin-bottom: 1.5rem">
         Refresh Daftar Sesi
       </button>
 
-      <input type="search" id="search-session-input" class="form-control" placeholder="Cari ID Sesi/Device..."
-        style="margin-bottom: 1.5rem;">
+      <input type="search" id="search-session-input" class="form-control" placeholder="Cari ID Sesi/Device..." style="margin-bottom: 1.5rem;">
 
       <div id="active-sessions-list" style="text-align: left">
         <p>Klik "Refresh" untuk memuat sesi...</p>
       </div>
+    </div>
 
     <div class="actions-container">
       <form action="/logout" method="post">
@@ -317,26 +322,26 @@
   </main>
 
   <script>
-    const tokenDisplay = document.getElementById("token-display");
+    // === Variabel Elemen DOM ===
+    const adminTokenDisplay = document.getElementById("admin-token-display"); // ID diubah
     const urlInput = document.getElementById("url-input");
     const qrCodeImage = document.getElementById("qr-code-image");
     const downloadButton = document.getElementById("download-button");
-
     const refreshSessionsButton = document.getElementById("refresh-sessions-btn");
     const sessionsListDiv = document.getElementById("active-sessions-list");
-    const tokenDisplayArea = document.getElementById("token-display-area");
-    const generatedTokenText = document.getElementById("generated-token-text");
-
-    // === ELEMEN BARU UNTUK PENCARIAN ===
     const searchInput = document.getElementById("search-session-input");
+    
+    // Variabel untuk elemen re-entry token baru
+    const reentryTokenDisplay = document.getElementById("reentry-token-display");
 
+    // === Fungsi untuk Token Masuk/Keluar (Admin) ===
     async function fetchCurrentToken() {
       try {
         const response = await fetch("/api/current-token");
         const data = await response.json();
-        tokenDisplay.textContent = data.token || "Error";
+        adminTokenDisplay.textContent = data.token || "Error";
       } catch (error) {
-        tokenDisplay.textContent = "Offline";
+        adminTokenDisplay.textContent = "Offline";
       }
     }
 
@@ -344,12 +349,37 @@
       try {
         const response = await fetch("/api/refresh-token", { method: "POST" });
         const data = await response.json();
-        tokenDisplay.textContent = data.token;
+        adminTokenDisplay.textContent = data.token;
       } catch (error) {
         alert("Gagal merefresh token.");
       }
     }
 
+    // =========== FUNGSI BARU UNTUK TOKEN RE-ENTRY ===========
+    async function fetchCurrentReentryToken() {
+        try {
+            const response = await fetch('/api/current-reentry-token');
+            const data = await response.json();
+            reentryTokenDisplay.textContent = data.reentry_token || 'Tidak Ada';
+        } catch (error) {
+            console.error('Gagal mengambil token re-entry:', error);
+            reentryTokenDisplay.textContent = 'Error';
+        }
+    }
+
+    async function refreshReentryToken() {
+        try {
+            const response = await fetch('/api/refresh-reentry-token', { method: 'POST' });
+            const data = await response.json();
+            reentryTokenDisplay.textContent = data.reentry_token;
+        } catch (error) {
+            console.error('Gagal merefresh token re-entry:', error);
+            alert('Gagal merefresh token re-entry.');
+        }
+    }
+    // ================= AKHIR FUNGSI BARU ==================
+
+    // === Fungsi untuk QR Code ===
     async function generateQRCode() {
       let url = urlInput.value.trim();
       if (!url) {
@@ -388,9 +418,9 @@
       document.body.removeChild(link);
     }
 
+    // === Fungsi untuk Sesi Aktif & Pencarian ===
     async function fetchActiveSessions() {
       sessionsListDiv.innerHTML = "<p>Memuat sesi aktif...</p>";
-      
       try {
         const response = await fetch("/api/active-sessions");
         if (!response.ok) throw new Error("Gagal mengambil data sesi");
@@ -408,42 +438,35 @@
         } else {
           sessionsListDiv.innerHTML = '<p style="color: rgba(255,255,255,0.7);">Tidak ada sesi ujian yang aktif saat ini.</p>';
         }
+        // Setelah memuat, filter sesi (jika ada teks di pencarian)
+        filterSessions();
       } catch (error) {
         sessionsListDiv.innerHTML = '<p style="color: #ffc107;">Gagal memuat sesi. Coba lagi.</p>';
         console.error("Error fetching sessions:", error);
       }
     }
-
-    // === FUNGSI BARU UNTUK FILTER PENCARIAN ===
+    
     function filterSessions() {
       const searchTerm = searchInput.value.toLowerCase();
       const sessionItems = sessionsListDiv.querySelectorAll('.list-group-item');
-
       sessionItems.forEach(item => {
         const sessionId = item.querySelector('code').textContent.toLowerCase();
         if (sessionId.includes(searchTerm)) {
-          item.style.display = 'flex'; // Tampilkan item jika cocok
+          item.style.display = 'flex';
         } else {
-          item.style.display = 'none'; // Sembunyikan jika tidak cocok
+          item.style.display = 'none';
         }
       });
     }
 
-    // Event Listeners
+    // === Event Listeners ===
     refreshSessionsButton.addEventListener("click", fetchActiveSessions);
-    sessionsListDiv.addEventListener("click", function (event) {
-      if (event.target && event.target.classList.contains("generate-reentry-token-btn")) {
-        const sessionId = event.target.getAttribute("data-session-id");
-        generateReentryToken(sessionId);
-      }
-    });
-
-    // === EVENT LISTENER BARU UNTUK INPUT PENCARIAN ===
     searchInput.addEventListener('input', filterSessions);
 
     // Panggil fungsi saat halaman pertama kali dimuat
     document.addEventListener("DOMContentLoaded", () => {
       fetchCurrentToken();
+      fetchCurrentReentryToken(); // <-- Panggil fungsi baru
       fetchActiveSessions();
     });
   </script>

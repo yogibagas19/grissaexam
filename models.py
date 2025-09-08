@@ -20,3 +20,4 @@ class AppState(Base):
     # Hanya akan ada satu baris di tabel ini, jadi ID 1 adalah kuncinya
     id = Column(Integer, primary_key=True, default=1)
     current_token = Column(String, nullable=True)
+    reentry_token = Column(String, nullable=True)  # Token untuk re-entry

@@ -21,12 +21,13 @@ from typing import Optional
 
 current_admin_token = None
 SESSION_COOKIE_NAME = "grissa_admin_session"
+SESSION_TIMEOUT_SECONDS = 900
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
 def generate_new_token():
     return "".join(random.choices(string.digits, k=6))
 
-def refresh_admin_token_job():
+def refresh_tokens_job():
     db = SessionLocal()
     try:
         app_state = db.query(AppState).filter(AppState.id == 1).first()
@@ -36,38 +37,29 @@ def refresh_admin_token_job():
             db.add(app_state)
             db.commit()
             db.refresh(app_state)
+            
+        new_admin_token = generate_new_token()
+        app_state.current_token = new_admin_token
+        redis_client.set("current_admin_token", new_admin_token)
+        print(f"Token Admin Baru (Otomatis): {new_admin_token}")
 
-        new_token = generate_new_token()
-        app_state.current_token = new_token
+        new_reentry_token = generate_new_token()
+        if hasattr(app_state, 'reentry_token'):
+            app_state.reentry_token = new_reentry_token # Asumsi Anda sudah menambahkan kolom 'reentry_token' di model AppState
+        redis_client.set("current_reentry_token", new_reentry_token)
+        print(f"Token Re-entry Baru (Otomatis): {new_reentry_token}")
+
         db.commit()
-
-        redis_client.set("current_admin_token", new_token)
-        print(f"Token Admin Baru (Otomatis & Disimpan di Cache): {new_token}")
     finally:
         db.close()
 
 scheduler = AsyncIOScheduler()
-scheduler.add_job(refresh_admin_token_job, "interval", minutes=30)
+scheduler.add_job(refresh_tokens_job, "interval", minutes=30)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Memulai aplikasi dan mengisi cache token awal...")
-    db = SessionLocal()
-    try:
-        app_state = db.query(AppState).filter(AppState.id == 1).first()
-        if not app_state:
-            app_state = AppState(id=1)
-            db.add(app_state)
-            db.commit()
-            db.refresh(app_state)
-
-        new_token = generate_new_token()
-        app_state.current_token = new_token
-        db.commit()
-        redis_client.set("current_admin_token", new_token)
-        print(f"Token awal berhasil dibuat dan disimpan di cache: {new_token}")
-    finally:
-        db.close()
+    refresh_tokens_job()
     
     scheduler.start()
     print("Scheduler berhasil dimulai.")
@@ -88,6 +80,10 @@ class QRCodeRequest(BaseModel):
 class TokenValidationRequest(BaseModel):
     token: str
     sessionId: Optional[str] = None
+
+class SessionRequest(BaseModel):
+    sessionId: str
+
 
 async def get_current_admin(request: Request):
     if not request.cookies.get(SESSION_COOKIE_NAME):
@@ -225,66 +221,115 @@ async def generate_qr_code(qr_request: QRCodeRequest):
     buffer.seek(0)
     return StreamingResponse(buffer, media_type="image/png")
 
-# @app.post("/api/validate-token", tags=["API"])
-# async def validate_token(request: TokenValidationRequest):
-#     cached_token = redis_client.get("current_admin_token")
-
-#     if request.token and request.token == cached_token:
-#         return {"isValid": True}
-#     return {"isValid": False}
-@app.post("/api/validate-token", tags=["API"])
+@app.post("/api/v2/validate-token", tags=["API"])
 async def validate_token(request: TokenValidationRequest):
-    # Skenario 2: Permintaan Re-entry (dari layar terkunci)
+    # =================================================================
+    # SKENARIO 1: PERMINTAAN RE-ENTRY (ADA SESSION ID)
+    # =================================================================
     if request.sessionId:
-        print(f"Menerima permintaan re-entry untuk sesi: {request.sessionId}")
-        expected_token = redis_client.get(f"reentry_token_for:{request.sessionId}")
+        print(f"Menerima permintaan RE-ENTRY untuk sesi: {request.sessionId}")
+        
+        # 1. Ambil token re-entry yang sedang aktif dari cache
+        active_reentry_token = redis_client.get("current_reentry_token")
+        
+        # 2. Cek apakah token yang diberikan siswa BENAR
+        if not active_reentry_token or request.token != active_reentry_token:
+            print(f"Validasi GAGAL: Token re-entry salah. Diberikan: '{request.token}', Diharapkan: '{active_reentry_token}'")
+            return {"isValid": False}
+
+        # 3. Cek apakah device ini SUDAH PERNAH menggunakan token aktif ini
+        # Kita buat kunci unik di Redis untuk melacak penggunaan token ini
+        usage_key = f"used_reentry_token:{active_reentry_token}"
+        if redis_client.sismember(usage_key, request.sessionId):
+            print(f"Validasi GAGAL: Sesi {request.sessionId} sudah pernah menggunakan token '{active_reentry_token}'.")
+            return {"isValid": False}
+
+        # 4. Jika semua pengecekan lolos, token valid. CATAT PENGGUNAANNYA.
+        print(f"Validasi re-entry BERHASIL untuk sesi {request.sessionId}.")
+        # Tambahkan ID sesi ke dalam set token yang telah digunakan
+        redis_client.sadd(usage_key, request.sessionId)
+        # Atur masa berlaku untuk data penggunaan ini agar tidak menumpuk selamanya
+        # (sedikit lebih lama dari interval refresh token, misal 35 menit)
+        redis_client.expire(usage_key, 2100) 
+        
+        return {"isValid": True}
+        
+    # =================================================================
+    # SKENARIO 2: PERMINTAAN MASUK/KELUAR BIASA (TIDAK ADA SESSION ID)
+    # =================================================================
+    else:
+        print("Menerima permintaan MASUK/KELUAR biasa.")
+        expected_token = redis_client.get("current_admin_token")
         
         if expected_token and request.token == expected_token:
-            redis_client.delete(f"reentry_token_for:{request.sessionId}")
+            print("Validasi Token Admin BERHASIL.")
             return {"isValid": True}
         else:
-            return {"isValid": False}
-            
-    # Skenario 1: Permintaan Keluar Biasa (dari tombol Exit)
-    else:
-        print("Menerima permintaan keluar biasa.")
-        cached_token = redis_client.get("current_admin_token")
-        if request.token and request.token == cached_token:
-            return {"isValid": True}
-        else:
+            print(f"Validasi Token Admin GAGAL. Diberikan: '{request.token}', Diharapkan: '{expected_token}'")
             return {"isValid": False}
 
 
 class SessionIdRequest(BaseModel):
     sessionId: str
 
-# @app.post("/api/generate-reentry-token", tags=["API"], dependencies=[Depends(get_current_admin)])
-# async def generate_reentry_token(request: SessionIdRequest):
-#     new_reentry_token = generate_new_token()
-#     redis_client.set(f"reentry_token_for:{request.sessionId}", new_reentry_token, ex=300)
-#     print(f"Token Lanjutan untuk sesi {request.sessionId} adalah {new_reentry_token}")
-#     # Logika untuk menghasilkan re-entry token berdasarkan sessionId
-#     return {"reentry_token": new_reentry_token}
+@app.get("/api/current-reentry-token", tags=["API"], dependencies=[Depends(get_current_admin)])
+async def get_current_reentry_token():
+    reentry_token = redis_client.get("current_reentry_token")
+    return {"reentry_token": reentry_token}
 
-@app.post("/api/session/start", tags=["API"])
-async def start_session(request: SessionIdRequest):
+@app.post("/api/refresh-reentry-token", tags=["API"], dependencies=[Depends(get_current_admin)])
+async def refresh_reentry_token_manual(db: Session = Depends(get_db)):
+    app_state = db.query(AppState).filter(AppState.id == 1).first()
+    if not app_state:
+        # Buat state jika belum ada
+        app_state = AppState(id=1)
+        db.add(app_state)
+    
+    new_reentry_token = generate_new_token()
+    app_state.reentry_token = new_reentry_token
+    redis_client.set("current_reentry_token", new_reentry_token)
+    db.commit()
+    
+    print(f"Token Re-entry di-refresh manual: {new_reentry_token}")
+    return {"reentry_token": new_reentry_token}
+
+@app.post("/api/sessions/start", tags=["API"])
+async def start_session_ttl(request: SessionRequest):
     session_id = request.sessionId
-    if session_id:
-        redis_client.sadd("active_exam_sessions", session_id)
-        print(f"Sesi dimulai dan terdaftar: {session_id}")
-        return {"status": "session regsitered"}
-    return {"status": "error", "message": "sessionId is required"}
+    if not session_id:
+        raise HTTPException(status_code=400, detail="sessionId is required")
+    session_key = f"active_session:{session_id}"
+    redis_client.set(session_key, "active", ex=SESSION_TIMEOUT_SECONDS)
+    print(f"Sesi dimulai: {session_id}, akan kedaluwarsa dalam {SESSION_TIMEOUT_SECONDS} detik.")
+    return {"status": "session registered", "expires_in": SESSION_TIMEOUT_SECONDS}
 
-@app.get("/api/active-sessions", tags=["API"])
-async def get_active_sessions():
-    session_ids = redis_client.smembers("active_exam_sessions")
-    return {"active_sessions": list(session_ids)}
+@app.get("/api/active-sessions", tags=["API"], dependencies=[Depends(get_current_admin)])
+async def get_active_sessions_ttl():
+    session_keys = redis_client.scan_iter("active_session:*")
+    active_sessions = [key.split(":", 1)[1] for key in session_keys]
+    print(f"Mengambil daftar sesi aktif, ditemukan: {len(active_sessions)} sesi.")
+    return {"active_sessions": active_sessions}
 
-@app.post("/api/session/end", tags=["API"])
-async def end_session(request: SessionIdRequest):
+@app.post("/api/sessions/end", tags=["API"])
+async def end_session_ttl(request: SessionRequest):
     session_id = request.sessionId
-    if session_id:
-        redis_client.srem("active_exam_sessions", session_id)
-        print(f"Sesi diakhiri dan dihapus dari daftar aktif: {session_id}")
-        return {"status": "session ended"}
-    return {"status": "error", "message": "sessionId is required"}
+    if not session_id:
+        raise HTTPException(status_code=400, detail="sessionId is required")
+    session_key = f"active_session:{session_id}"
+    redis_client.delete(session_key)
+    print(f"Sesi diakhiri secara normal: {session_id}")
+    return {"status": "session ended"}
+
+@app.post("/api/sessions/heartbeat", tags=["Sesi"])
+async def session_heartbeat(request: SessionRequest):
+    session_id = request.sessionId
+    if not session_id:
+        raise HTTPException(status_code=400, detail="sessionId is required")
+    session_key = f"active_session:{session_id}"
+    if redis_client.exists(session_key):
+        redis_client.expire(session_key, SESSION_TIMEOUT_SECONDS)
+        print(f"Heartbeat diterima untuk sesi: {session_id}")
+        return {"status": "heartbeat ok"}
+    else:
+        print(f"Heartbeat ditolak, sesi sudah kedaluwarsa: {session_id}")
+        raise HTTPException(status_code=404, detail="Session not found or has expired.")

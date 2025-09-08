@@ -10,7 +10,7 @@ print("Tabel berhasil dibuat.")
 db = SessionLocal()
 
 admin_username = "admin"
-admin_password = "Grissa_2000" # Ganti dengan password yang lebih kuat
+admin_password = "admin" # Ganti dengan password yang lebih kuat
 hashed_password = pwd_context.hash(admin_password)
 
 existing_user = db.query(User).filter(User.username == admin_username).first()
