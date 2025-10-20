@@ -1,0 +1,30 @@
+services:
+  app:
+    image: sl0thhhh/grissa-exam:2.3
+    restart: unless-stopped
+    ports:
+      - 8010:8000
+    volumes:
+      - ./database.db:/app/database.db
+    depends_on:
+      redis:
+        condition: service_healthy
+  redis:
+    image: redis:alpine
+    restart: always
+    volumes:
+      - ./redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     # Mount file konfigurasi Nginx Anda ke dalam container
+  #     - ./nginx.conf:/etc/nginx/nginx.conf 
+  #   depends_on:
+  #     - app

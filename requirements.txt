@@ -9,3 +9,6 @@ qrcode
 pillow
 apscheduler[asyncio]
 redis
+google-auth
+python-dotenv
+requests

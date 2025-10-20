@@ -1,475 +1,581 @@
 <!DOCTYPE html>
 <html lang="id">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ title }} - Proktor</title>
-  <link rel="shortcut icon" href="https://smpn1salatiga.sch.id/home/po-includes/images/favicon.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    /* CSS Reset & Global Styles */
-    :root {
-      --primary-dark: #1c2b5f;
-      --primary-accent: #5352ed;
-      --secondary-accent: #fbc531;
-      --background-light: #f0f2f5;
-      --text-light: #ffffff;
-      --text-dark: #333333;
-      --border-radius: 12px;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: "Poppins", system-ui, -apple-system, sans-serif;
-      background-image: url(/static/images/background_index.png);
-      background-position: center;
-      background-size: cover;
-    }
-
-    /* Header */
-    .header {
-      width: 100%;
-      background-color: var(--primary-dark);
-      color: var(--text-light);
-      padding: 1.5rem 5%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .header-title {
-      font-size: 1.8rem;
-      font-weight: 700;
-    }
-
-    .header-logo img {
-      height: 100px;
-    }
-
-    /* Main Content */
-    main {
-      width: 100%;
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 2rem;
-    }
-
-    /* Card Styling */
-    .card {
-      background-color: var(--primary-dark);
-      color: var(--text-light);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: 0 8px 25px rgba(28, 43, 95, 0.2);
-      display: flex;
-      flex-direction: column;
-      text-align: center;
-    }
-
-    .card h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      padding-bottom: 1rem;
-    }
-
-    /* Generic Form Control Style */
-    .form-control {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      background-color: var(--text-light);
-      color: var(--text-dark);
-    }
-
-    /* Specific Card Styles */
-    .token-display {
-      /* Mengubah ID menjadi class agar bisa dipakai ulang */
-      background-color: var(--text-light);
-      color: var(--primary-accent);
-      font-size: 3.5rem;
-      font-weight: 700;
-      padding: 1rem;
-      border-radius: var(--border-radius);
-      margin-bottom: 1.5rem;
-      letter-spacing: 0.5rem;
-    }
-
-    #qr-code-container {
-      background-color: white;
-      padding: 1rem;
-      border-radius: var(--border-radius);
-      min-height: 200px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-grow: 1;
-      margin-bottom: 1rem;
-    }
-
-    #qr-code-image {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-    }
-
-    /* Button Styling */
-    .btn {
-      display: inline-block;
-      width: 100%;
-      border: none;
-      padding: 0.9rem 1.5rem;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-primary {
-      background-color: #2e86de;
-      color: var(--text-light);
-    }
-
-    .btn-secondary {
-      background-color: var(--secondary-accent);
-      color: var(--primary-dark);
-    }
-
-    .btn-danger {
-      background-color: #dc3545;
-      color: var(--text-light);
-    }
-
-    .token-card .btn-secondary {
-      margin-top: auto;
-    }
-
-    .actions-container {
-      margin-top: 2rem;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-    }
-
-    .actions-container a {
-      color: var(--text-light);
-    }
-
-    .list-group {
-      list-style: none;
-      padding: 0;
-      max-height: 300px;
-      /* Batasi tinggi list agar bisa di-scroll */
-      overflow-y: auto;
-      /* Tambahkan scroll vertikal jika item banyak */
-    }
-
-    .list-group-item {
-      background-color: rgba(255, 255, 255, 0.05);
-      padding: 0.75rem 1.25rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      margin-bottom: -1px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .list-group-item:first-child {
-      border-top-left-radius: var(--border-radius);
-      border-top-right-radius: var(--border-radius);
-    }
-
-    .list-group-item:last-child {
-      margin-bottom: 0;
-      border-bottom-right-radius: var(--border-radius);
-      border-bottom-left-radius: var(--border-radius);
-    }
-
-    .btn-sm {
-      padding: 0.5rem 0.8rem;
-      font-size: 0.875rem;
-      border-radius: 8px;
-      width: auto;
-    }
-
-    /* Mobile Responsiveness */
-    @media (max-width: 800px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} - Proktor</title>
+    <link
+      rel="shortcut icon"
+      href="https://smpn1salatiga.sch.id/home/po-includes/images/favicon.png"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* CSS Reset & Global Styles */
+      :root {
+        --primary-dark: #1c2b5f;
+        --primary-accent: #5352ed;
+        --secondary-accent: #fbc531;
+        --background-light: #f0f2f5;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --border-radius: 12px;
       }
 
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", system-ui, -apple-system, sans-serif;
+        background-image: url(/static/images/background_index.png);
+        background-position: center;
+        background-size: cover;
+      }
+
+      /* Header */
       .header {
+        width: 100%;
+        background-color: var(--primary-dark);
+        color: var(--text-light);
+        padding: 1.5rem 5%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+
+      .header-logo img {
+        height: 100px;
+      }
+
+      /* Main Content */
+      main {
+        width: 100%;
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 2rem;
+      }
+
+      /* Card Styling */
+      .card {
+        background-color: var(--primary-dark);
+        color: var(--text-light);
+        padding: 2rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 8px 25px rgba(28, 43, 95, 0.2);
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .card h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 1rem;
+      }
+
+      /* Generic Form Control Style */
+      .form-control {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        background-color: var(--text-light);
+        color: var(--text-dark);
+      }
+
+      /* Specific Card Styles */
+      .token-display {
+        /* Mengubah ID menjadi class agar bisa dipakai ulang */
+        background-color: var(--text-light);
+        color: var(--primary-accent);
+        font-size: 3.5rem;
+        font-weight: 700;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+        letter-spacing: 0.5rem;
+      }
+
+      #qr-code-container {
+        background-color: white;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        min-height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+        margin-bottom: 1rem;
+      }
+
+      #qr-code-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+
+      /* Button Styling */
+      .btn {
+        display: inline-block;
+        width: 100%;
+        border: none;
+        padding: 0.9rem 1.5rem;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-primary {
+        background-color: #2e86de;
+        color: var(--text-light);
+      }
+
+      .btn-secondary {
+        background-color: var(--secondary-accent);
+        color: var(--primary-dark);
+      }
+
+      .btn-danger {
+        background-color: #dc3545;
+        color: var(--text-light);
+      }
+
+      .manual-token-form {
+        display: flex;
         flex-direction: column;
         gap: 1rem;
+        align-items: center;
+        margin-top: 1rem;
       }
-    }
+      .manual-token-form input {
+        margin-bottom: 0;
+        text-align: center;
+        font-size: 1.2rem;
+      }
+      .manual-token-form button {
+        width: auto;
+        white-space: nowrap;
+      }
+      /* Mencegah tombol panah di input number pada beberapa browser */
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
 
-    @media (max-width: 500px) {
       .actions-container {
-        grid-template-columns: 1fr;
+        margin-top: 2rem;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
       }
 
-      .token-display {
-        /* Mengubah ID menjadi class */
-        font-size: 2.5rem;
-        letter-spacing: 0.2rem;
+      .actions-container a {
+        color: var(--text-light);
+      }
+
+      .list-group {
+        list-style: none;
+        padding: 0;
+        max-height: 300px;
+        /* Batasi tinggi list agar bisa di-scroll */
+        overflow-y: auto;
+        /* Tambahkan scroll vertikal jika item banyak */
       }
 
       .list-group-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.05);
+        padding: 0.75rem 1.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: -1px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <header class="header">
-    <div class="header-title">Proktor DISAPA</div>
-    <div class="header-logo">
-      <img src="{{ url_for('static', path='images/logo.png') }}" alt="Logo Sekolah" />
-    </div>
-  </header>
+      .list-group-item:first-child {
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+      }
 
-  <main>
-    <div class="dashboard-grid">
-      <div>
-        <div class="card token-card">
-          <h2>Token Masuk / Keluar</h2>
-          <div id="admin-token-display" class="token-display">...</div>
-          <p>
-            <small>Token diperbarui otomatis setiap 30 menit.</small>
-          </p>
-          <button class="btn btn-secondary" onclick="refreshToken()" style="margin-top: 1rem">
-            Refresh Token Manual
+      .list-group-item:last-child {
+        margin-bottom: 0;
+        border-bottom-right-radius: var(--border-radius);
+        border-bottom-left-radius: var(--border-radius);
+      }
+
+      .btn-sm {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.875rem;
+        border-radius: 8px;
+        width: auto;
+      }
+
+      /* Mobile Responsiveness */
+      @media (max-width: 800px) {
+        .dashboard-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header {
+          flex-direction: column;
+          gap: 1rem;
+        }
+      }
+
+      @media (max-width: 500px) {
+        .actions-container {
+          grid-template-columns: 1fr;
+        }
+
+        .token-display {
+          /* Mengubah ID menjadi class */
+          font-size: 2.5rem;
+          letter-spacing: 0.2rem;
+        }
+
+        .list-group-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="header-title">Proktor DISAPA</div>
+      <div class="header-logo">
+        <img
+          src="{{ url_for('static', path='images/logo.png') }}"
+          alt="Logo Sekolah"
+        />
+      </div>
+    </header>
+
+    <main>
+      <div class="dashboard-grid">
+        <div>
+          <div class="card token-card">
+            <h2>Token Global Aktif</h2>
+            <div id="admin-token-display" class="token-display">...</div>
+            <p>
+              <small
+                >Token ini digunakan untuk masuk, keluar, dan re-entry.</small
+              >
+            </p>
+
+            <div class="manual-token-form">
+              <input
+                type="number"
+                id="admin-token-input"
+                class="form-control"
+                placeholder="Input 4 Digit Baru"
+                maxlength="4"
+                oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
+              />
+              <button class="btn btn-secondary" onclick="setToken()">
+                Atur Token Baru
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card qr-card">
+          <h2>Buat QR Code Ujian</h2>
+          <input
+            type="url"
+            id="url-input"
+            class="form-control"
+            style="margin-bottom: 0"
+            placeholder="https://..."
+          />
+
+          <div
+            style="
+              text-align: left;
+              margin: 1rem 0;
+              display: flex;
+              align-items: center;
+            "
+          >
+            <input
+              type="checkbox"
+              id="secure-app-checkbox"
+              checked
+              style="
+                width: auto;
+                height: 1.2rem;
+                width: 1.2rem;
+                margin-right: 0.5rem;
+              "
+            />
+            <label for="secure-app-checkbox" style="font-size: 0.9rem"
+              >Gunakan GrissaExam</label
+            >
+          </div>
+          <button class="btn btn-primary" onclick="generateQRCode()">
+            Buat QR Code
+          </button>
+          <div id="qr-code-container">
+            <img id="qr-code-image" src="" alt="QR Code akan muncul di sini" />
+          </div>
+          <button
+            id="download-button"
+            class="btn btn-secondary"
+            onclick="downloadQRCode()"
+            style="display: none"
+          >
+            Unduh QR Code
           </button>
         </div>
-
-        <div class="card token-card" style="margin-top: 2rem">
-          <h2>Token Re-entry</h2>
-          <div id="reentry-token-display" class="token-display" style="color: #e84118">...</div>
-          <p>
-            <small>Gunakan jika siswa keluar & terkena penalti.</small>
-          </p>
-          <button class="btn btn-secondary" onclick="refreshReentryToken()" style="margin-top: 1rem; background-color: #e84118; color: white;">
-            Refresh Token Re-entry
-          </button>
-        </div>
-        </div>
-
-      <div class="card qr-card">
-        <h2>Buat QR Code Ujian</h2>
-        <input type="url" id="url-input" class="form-control" style="margin-bottom: 0;" placeholder="https://disapa.smpn1salatiga.sch.id" />
-        <button class="btn btn-primary" onclick="generateQRCode()" style="margin-top: 1rem">
-          Buat QR Code
-        </button>
-        <div id="qr-code-container">
-          <img id="qr-code-image" src="" alt="QR Code akan muncul di sini" />
-        </div>
-        <button id="download-button" class="btn btn-secondary" onclick="downloadQRCode()" style="display: none">
-          Unduh QR Code
-        </button>
       </div>
-    </div>
 
-    <div class="card" style="margin-top: 2rem">
-      <h2>Pengawasan Sesi Aktif</h2>
-      <button id="refresh-sessions-btn" class="btn btn-secondary" style="margin-bottom: 1.5rem">
-        Refresh Daftar Sesi
-      </button>
+      <div class="card" style="margin-top: 2rem">
+        <h2>Pengawasan Sesi Aktif</h2>
+        <button
+          id="refresh-sessions-btn"
+          class="btn btn-secondary"
+          style="margin-bottom: 1.5rem"
+        >
+          Refresh Daftar Sesi
+        </button>
 
-      <input type="search" id="search-session-input" class="form-control" placeholder="Cari ID Sesi/Device..." style="margin-bottom: 1.5rem;">
+        <input
+          type="search"
+          id="search-session-input"
+          class="form-control"
+          placeholder="Cari ID Sesi/Device..."
+          style="margin-bottom: 1.5rem"
+        />
 
-      <div id="active-sessions-list" style="text-align: left">
-        <p>Klik "Refresh" untuk memuat sesi...</p>
+        <div id="active-sessions-list" style="text-align: left">
+          <p>Klik "Refresh" untuk memuat sesi...</p>
+        </div>
       </div>
-    </div>
 
-    <div class="actions-container">
-      <form action="/logout" method="post">
-        <button type="submit" class="btn btn-danger">Logout</button>
-      </form>
-      <a href="/admin/users" class="btn btn-primary">Manajemen User</a>
-    </div>
-  </main>
+      <div class="actions-container">
+        <form action="/logout" method="post">
+          <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+        <a href="/admin/users" class="btn btn-primary">Manajemen User</a>
+      </div>
+    </main>
 
-  <script>
-    // === Variabel Elemen DOM ===
-    const adminTokenDisplay = document.getElementById("admin-token-display"); // ID diubah
-    const urlInput = document.getElementById("url-input");
-    const qrCodeImage = document.getElementById("qr-code-image");
-    const downloadButton = document.getElementById("download-button");
-    const refreshSessionsButton = document.getElementById("refresh-sessions-btn");
-    const sessionsListDiv = document.getElementById("active-sessions-list");
-    const searchInput = document.getElementById("search-session-input");
-    
-    // Variabel untuk elemen re-entry token baru
-    const reentryTokenDisplay = document.getElementById("reentry-token-display");
+    <script>
+      // === Variabel Elemen DOM ===
+      const adminTokenDisplay = document.getElementById("admin-token-display");
+      const adminTokenInput = document.getElementById("admin-token-input");
+      const urlInput = document.getElementById("url-input");
+      const qrCodeImage = document.getElementById("qr-code-image");
+      const downloadButton = document.getElementById("download-button");
+      const refreshSessionsButton = document.getElementById(
+        "refresh-sessions-btn"
+      );
+      const sessionsListDiv = document.getElementById("active-sessions-list");
+      const searchInput = document.getElementById("search-session-input");
 
-    // === Fungsi untuk Token Masuk/Keluar (Admin) ===
-    async function fetchCurrentToken() {
-      try {
-        const response = await fetch("/api/current-token");
-        const data = await response.json();
-        adminTokenDisplay.textContent = data.token || "Error";
-      } catch (error) {
-        adminTokenDisplay.textContent = "Offline";
+      // === KONEKSI WEBSOCKET (Satu-satunya sumber untuk update token) ===
+      function connectWebSocket() {
+        const wsProtocol =
+          window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws/token-updates`;
+        const socket = new WebSocket(wsUrl);
+
+        socket.onopen = function () {
+          console.log("WebSocket terhubung.");
+        };
+
+        socket.onmessage = function (event) {
+          const data = JSON.parse(event.data);
+          if (data.type === "ping") {
+            return;
+          }
+
+          console.log("Menerima data:", data);
+          if (
+            data.type === "initial_state" ||
+            data.type === "admin_token_update"
+          ) {
+            const tokenValue = data.admin_token || data.token || "N/A";
+            adminTokenDisplay.textContent = tokenValue;
+          }
+        };
+
+        socket.onclose = function () {
+          console.log("WebSocket terputus. Mencoba menghubungkan kembali...");
+          adminTokenDisplay.textContent = "Offline";
+          setTimeout(connectWebSocket, 5000);
+        };
+        socket.onerror = function () {
+          adminTokenDisplay.textContent = "Error";
+        };
       }
-    }
 
-    async function refreshToken() {
-      try {
-        const response = await fetch("/api/refresh-token", { method: "POST" });
-        const data = await response.json();
-        adminTokenDisplay.textContent = data.token;
-      } catch (error) {
-        alert("Gagal merefresh token.");
-      }
-    }
-
-    // =========== FUNGSI BARU UNTUK TOKEN RE-ENTRY ===========
-    async function fetchCurrentReentryToken() {
+      async function setToken() {
+        const token = adminTokenInput.value.trim();
+        if (!/^\d{4}$/.test(token)) {
+          alert("Token harus berupa 4 digit angka!");
+          return;
+        }
         try {
-            const response = await fetch('/api/current-reentry-token');
-            const data = await response.json();
-            reentryTokenDisplay.textContent = data.reentry_token || 'Tidak Ada';
+          const response = await fetch("/api/set-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: token }),
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Gagal mengatur token.");
+          }
+          adminTokenInput.value = ""; // Kosongkan input setelah berhasil
+          // Tampilan akan diupdate otomatis via WebSocket
         } catch (error) {
-            console.error('Gagal mengambil token re-entry:', error);
-            reentryTokenDisplay.textContent = 'Error';
+          console.error("Gagal mengatur token:", error);
+          alert(error.message);
         }
-    }
+      }
 
-    async function refreshReentryToken() {
+      // === Fungsi lain (QR, Sesi, dll) tidak perlu diubah ===
+      async function generateQRCode() {
+        let url = urlInput.value.trim();
+        if (!url) {
+          alert("Silakan masukkan URL ujian.");
+          return;
+        }
+        if (!/^https?:\/\//i.test(url)) {
+          url = "https://" + url;
+        }
+
+        // Ambil status checkbox
+        const useSecureApp = document.getElementById(
+          "secure-app-checkbox"
+        ).checked;
+
         try {
-            const response = await fetch('/api/refresh-reentry-token', { method: 'POST' });
-            const data = await response.json();
-            reentryTokenDisplay.textContent = data.reentry_token;
+          const response = await fetch("/api/generate-qr", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // Kirim status checkbox ke backend
+            body: JSON.stringify({
+              url: url,
+              use_secure_app: useSecureApp,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Gagal membuat QR Code dari server.");
+          }
+          const imageBlob = await response.blob();
+          const imageUrl = URL.createObjectURL(imageBlob);
+          qrCodeImage.src = imageUrl;
+          qrCodeImage.alt = "QR Code untuk: " + url;
+          downloadButton.style.display = "block";
         } catch (error) {
-            console.error('Gagal merefresh token re-entry:', error);
-            alert('Gagal merefresh token re-entry.');
+          console.error("Error:", error);
+          alert("Gagal membuat QR Code.");
         }
-    }
-    // ================= AKHIR FUNGSI BARU ==================
-
-    // === Fungsi untuk QR Code ===
-    async function generateQRCode() {
-      let url = urlInput.value.trim();
-      if (!url) {
-        alert("Silakan masukkan URL ujian.");
-        return;
       }
-      if (!/^https?:\/\//i.test(url)) {
-        url = "https://" + url;
-      }
-      try {
-        const response = await fetch("/api/generate-qr", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: url }),
-        });
-        if (!response.ok) {
-          throw new Error("Gagal membuat QR Code dari server.");
-        }
-        const imageBlob = await response.blob();
-        const imageUrl = URL.createObjectURL(imageBlob);
-        qrCodeImage.src = imageUrl;
-        qrCodeImage.alt = "QR Code untuk: " + url;
-        downloadButton.style.display = "block";
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Gagal membuat QR Code.");
-      }
-    }
 
-    function downloadQRCode() {
-      const link = document.createElement("a");
-      link.href = qrCodeImage.src;
-      link.download = "qrcode-ujian.png";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+      function downloadQRCode() {
+        const link = document.createElement("a");
+        link.href = qrCodeImage.src;
+        link.download = "qrcode-ujian.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
 
-    // === Fungsi untuk Sesi Aktif & Pencarian ===
-    async function fetchActiveSessions() {
-      sessionsListDiv.innerHTML = "<p>Memuat sesi aktif...</p>";
-      try {
-        const response = await fetch("/api/active-sessions");
-        if (!response.ok) throw new Error("Gagal mengambil data sesi");
-        const data = await response.json();
-        if (data.active_sessions && data.active_sessions.length > 0) {
-          let listHtml = '<ul class="list-group">';
-          data.active_sessions.forEach((sessionId) => {
-            listHtml += `
+      async function fetchActiveSessions() {
+        sessionsListDiv.innerHTML = "<p>Memuat sesi aktif...</p>";
+        try {
+          const response = await fetch("/api/active-sessions");
+          if (!response.ok) throw new Error("Gagal mengambil data sesi");
+          const data = await response.json();
+          if (data.active_sessions && data.active_sessions.length > 0) {
+            let listHtml = '<ul class="list-group">';
+            data.active_sessions.forEach((sessionId) => {
+              listHtml += `
                             <li class="list-group-item">
                                 <span>ID Sesi: <small><code>${sessionId}</code></small></span>
                             </li>`;
-          });
-          listHtml += "</ul>";
-          sessionsListDiv.innerHTML = listHtml;
-        } else {
-          sessionsListDiv.innerHTML = '<p style="color: rgba(255,255,255,0.7);">Tidak ada sesi ujian yang aktif saat ini.</p>';
+            });
+            listHtml += "</ul>";
+            sessionsListDiv.innerHTML = listHtml;
+          } else {
+            sessionsListDiv.innerHTML =
+              '<p style="color: rgba(255,255,255,0.7);">Tidak ada sesi ujian yang aktif saat ini.</p>';
+          }
+          filterSessions();
+        } catch (error) {
+          sessionsListDiv.innerHTML =
+            '<p style="color: #ffc107;">Gagal memuat sesi. Coba lagi.</p>';
+          console.error("Error fetching sessions:", error);
         }
-        // Setelah memuat, filter sesi (jika ada teks di pencarian)
-        filterSessions();
-      } catch (error) {
-        sessionsListDiv.innerHTML = '<p style="color: #ffc107;">Gagal memuat sesi. Coba lagi.</p>';
-        console.error("Error fetching sessions:", error);
       }
-    }
-    
-    function filterSessions() {
-      const searchTerm = searchInput.value.toLowerCase();
-      const sessionItems = sessionsListDiv.querySelectorAll('.list-group-item');
-      sessionItems.forEach(item => {
-        const sessionId = item.querySelector('code').textContent.toLowerCase();
-        if (sessionId.includes(searchTerm)) {
-          item.style.display = 'flex';
-        } else {
-          item.style.display = 'none';
-        }
+
+      function filterSessions() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const sessionItems =
+          sessionsListDiv.querySelectorAll(".list-group-item");
+        sessionItems.forEach((item) => {
+          const sessionId = item
+            .querySelector("code")
+            .textContent.toLowerCase();
+          if (sessionId.includes(searchTerm)) {
+            item.style.display = "flex";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      }
+
+      // === Event Listeners ===
+      refreshSessionsButton.addEventListener("click", fetchActiveSessions);
+      searchInput.addEventListener("input", filterSessions);
+
+      // Panggil fungsi saat halaman pertama kali dimuat
+      document.addEventListener("DOMContentLoaded", () => {
+        connectWebSocket(); // <-- HANYA PANGGIL INI untuk token
+        fetchActiveSessions();
       });
-    }
-
-    // === Event Listeners ===
-    refreshSessionsButton.addEventListener("click", fetchActiveSessions);
-    searchInput.addEventListener('input', filterSessions);
-
-    // Panggil fungsi saat halaman pertama kali dimuat
-    document.addEventListener("DOMContentLoaded", () => {
-      fetchCurrentToken();
-      fetchCurrentReentryToken(); // <-- Panggil fungsi baru
-      fetchActiveSessions();
-    });
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
