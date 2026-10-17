@@ -1,6 +1,6 @@
 # GrissaExam Backend (Proktor DISAPA)
 
-Sistem backend dan dashboard proktor berbasis web untuk mendukung pelaksanaan ujian berbasis perangkat bergerak (Mobile Computer-Based Test) menggunakan aplikasi Exam Browser khusus (**GrissaExam**). Proyek ini dirancang untuk menyediakan sinkronisasi token secara real-time, pembuatan QR Code terenkapsulasi dengan mekanisme deep-linking ke aplikasi Android, serta pemantauan sesi peserta ujian secara langsung.
+Sistem backend dan dashboard proktor berbasis web untuk mendukung pelaksanaan ujian berbasis perangkat bergerak (Mobile Computer-Based Test) menggunakan aplikasi Exam Browser khusus (**DISAPA EXAM**). Proyek ini dirancang untuk menyediakan sinkronisasi token secara real-time, pembuatan QR Code terenkapsulasi dengan mekanisme deep-linking ke aplikasi Android, serta pemantauan sesi peserta ujian secara langsung.
 
 ---
 
